@@ -1,0 +1,130 @@
+<div class="p-4" x-data="{ showAddForm: false }">
+    <!-- Page Header -->
+    <div class="flex justify-between items-center mb-4">
+        <div>
+            <h1 class="text-2xl font-bold">{{ _("Adjustments") }}</h1>
+            <p class="text-sm text-muted mt-1">{{ _("Manual commission adjustments, bonuses, and corrections") }}</p>
+        </div>
+        <button type="button" class="btn color-primary" @click="showAddForm = !showAddForm">
+            {{ icon("add-outline", class="mr-1") }}
+            {{ _("New Adjustment") }}
+        </button>
+    </div>
+
+    <!-- Add Adjustment Form (hidden by default) -->
+    <div class="card mb-4" x-show="showAddForm" x-cloak>
+        <div class="card-header">
+            <h3 class="card-title">{{ icon("add-circle-outline", class="text-primary") }} {{ _("Create Adjustment") }}</h3>
+        </div>
+        <div class="card-body">
+            <form @submit.prevent="
+                let f = new FormData($el);
+                fetch('/m/commissions/adjustments/add', {method:'POST', headers:{'X-CSRFToken':csrfToken}, body:f})
+                .then(r=>r.json()).then(d=>{
+                    if(d.success) htmx.ajax('GET','/m/commissions/adjustments',{target:'#main-content-area',pushUrl:true});
+                    else showToast(d.error || d.errors || 'Error creating adjustment','error');
+                })">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                    <div>
+                        <label class="form-group-label mb-1">{{ _("Staff Member") }}</label>
+                        <input type="text" name="staff_id" class="input" placeholder="{{ _('Staff ID') }}" required>
+                    </div>
+                    <div>
+                        <label class="form-group-label mb-1">{{ _("Type") }}</label>
+                        <select name="adjustment_type" class="select">
+                            {% for key, label in type_choices.items() %}
+                            <option value="{{ key }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-group-label mb-1">{{ _("Amount") }}</label>
+                        <input type="number" name="amount" class="input" step="0.01" placeholder="0.00" required>
+                        <span class="text-xs text-muted">{{ _("Positive for additions, negative for deductions") }}</span>
+                    </div>
+                    <div>
+                        <label class="form-group-label mb-1">{{ _("Date") }}</label>
+                        <input type="date" name="adjustment_date" class="input" required>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-group-label mb-1">{{ _("Reason") }}</label>
+                    <textarea name="reason" class="textarea" rows="2" placeholder="{{ _('Explain the reason for this adjustment') }}" required></textarea>
+                </div>
+                <div class="flex gap-2">
+                    <button type="submit" class="btn color-primary">
+                        {{ icon("checkmark-outline", class="mr-1") }}
+                        {{ _("Create") }}
+                    </button>
+                    <button type="button" class="btn btn-ghost" @click="showAddForm = false">
+                        {{ _("Cancel") }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <select name="type" class="select"
+                hx-get="/m/commissions/adjustments"
+                hx-trigger="change"
+                hx-target="#main-content-area"
+                hx-push-url="true">
+                <option value="">{{ _("All types") }}</option>
+                {% for key, label in type_choices.items() %}
+                <option value="{{ key }}" {% if type_filter == key %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <!-- Adjustments List -->
+    <div class="card">
+        <div class="card-body p-0">
+            {% if adjustments %}
+            <div class="list">
+                {% for adj in adjustments %}
+                <a hx-get="/m/commissions/adjustments/{{ adj.id }}"
+                   hx-target="#main-content-area"
+                   hx-push-url="true"
+                   class="list-item list-item-clickable">
+                    <div class="list-item-start">
+                        <div class="w-10 h-10 rounded-lg bg-{% if adj.amount >= 0 %}success{% else %}error{% endif %}/10 flex items-center justify-center">
+                            {% if adj.amount >= 0 %}
+                                {{ icon("arrow-up-outline", class="text-xl text-success") }}
+                            {% else %}
+                                {{ icon("arrow-down-outline", class="text-xl text-error") }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="list-item-content">
+                        <div class="list-item-label">{{ adj.staff_name }}</div>
+                        <div class="list-item-note">
+                            {{ adj.adjustment_type_display }} &middot; {{ adj.adjustment_date.strftime("%d/%m/%Y") }}
+                        </div>
+                    </div>
+                    <div class="list-item-end text-right">
+                        <div class="font-semibold {% if adj.amount >= 0 %}text-success{% else %}text-error{% endif %}">
+                            {% if adj.amount >= 0 %}+{% endif %}${{ "%.2f"|format(adj.amount) }}
+                        </div>
+                        {% if adj.payout_id %}
+                        <span class="badge badge-sm color-primary">{{ _("In Payout") }}</span>
+                        {% endif %}
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-12 text-muted">
+                {{ icon("swap-horizontal-outline", class="text-5xl block mx-auto mb-2") }}
+                <p class="mt-2">{{ _("No adjustments found") }}</p>
+                <button type="button" class="btn btn-sm color-primary mt-3" @click="showAddForm = true">
+                    {{ _("Create an adjustment") }}
+                </button>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>

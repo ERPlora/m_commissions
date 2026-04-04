@@ -1,0 +1,108 @@
+<div class="p-4" x-data="{ showAddForm: false }">
+    <!-- Page Header -->
+    <div class="flex justify-between items-center mb-4">
+        <div>
+            <h1 class="text-2xl font-bold">{{ _("Commission Rules") }}</h1>
+            <p class="text-sm text-muted mt-1">{{ _("Define how commissions are calculated") }}</p>
+        </div>
+        <button type="button" class="btn color-primary" @click="showAddForm = !showAddForm">
+            {{ icon("add-outline", class="mr-1") }}
+            {{ _("New Rule") }}
+        </button>
+    </div>
+
+    <!-- Add Rule Form (hidden by default) -->
+    <div class="card mb-4" x-show="showAddForm" x-cloak>
+        <div class="card-header">
+            <h3 class="card-title">{{ icon("add-circle-outline", class="text-primary") }} {{ _("Create Rule") }}</h3>
+        </div>
+        <div class="card-body">
+            <form @submit.prevent="
+                let f = new FormData($el);
+                f.append('is_active', 'true');
+                fetch('/m/commissions/rules/add', {method:'POST', headers:{'X-CSRFToken':csrfToken}, body:f})
+                .then(r=>r.json()).then(d=>{
+                    if(d.success) htmx.ajax('GET','/m/commissions/rules',{target:'#main-content-area',pushUrl:true});
+                    else showToast(d.error || 'Error creating rule','error');
+                })">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                    <div>
+                        <label class="form-group-label mb-1">{{ _("Rule Name") }}</label>
+                        <input type="text" name="name" class="input" placeholder="{{ _('e.g. Standard Commission') }}" required>
+                    </div>
+                    <div>
+                        <label class="form-group-label mb-1">{{ _("Type") }}</label>
+                        <select name="rule_type" class="select">
+                            {% for key, label in rule_type_choices.items() %}
+                            <option value="{{ key }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-group-label mb-1">{{ _("Rate / Amount") }}</label>
+                        <input type="number" name="rate" class="input" step="0.01" min="0" placeholder="10.00" required>
+                    </div>
+                    <div>
+                        <label class="form-group-label mb-1">{{ _("Priority") }}</label>
+                        <input type="number" name="priority" class="input" min="0" value="0">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-group-label mb-1">{{ _("Description") }}</label>
+                    <textarea name="description" class="textarea" rows="2"></textarea>
+                </div>
+                <div class="flex gap-2">
+                    <button type="submit" class="btn color-primary">
+                        {{ icon("checkmark-outline", class="mr-1") }}
+                        {{ _("Create") }}
+                    </button>
+                    <button type="button" class="btn btn-ghost" @click="showAddForm = false">
+                        {{ _("Cancel") }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Rules List -->
+    <div class="card">
+        <div class="card-body p-0">
+            {% if rules %}
+            <div class="list">
+                {% for rule in rules %}
+                <a hx-get="/m/commissions/rules/{{ rule.id }}"
+                   hx-target="#main-content-area"
+                   hx-push-url="true"
+                   class="list-item list-item-clickable">
+                    <div class="list-item-start">
+                        <div class="w-10 h-10 rounded-lg bg-{% if rule.is_active %}primary{% else %}gray{% endif %}/10 flex items-center justify-center">
+                            {{ icon("options-outline", class="text-xl text-" ~ ("primary" if rule.is_active else "muted")) }}
+                        </div>
+                    </div>
+                    <div class="list-item-content">
+                        <div class="list-item-label">{{ rule.name }}</div>
+                        <div class="list-item-note">
+                            {{ rule.rule_type_display }}:
+                            {% if rule.rule_type == 'flat' %}${{ "%.2f"|format(rule.rate) }}{% else %}{{ rule.rate }}%{% endif %}
+                        </div>
+                    </div>
+                    <div class="list-item-end">
+                        <span class="badge badge-sm color-{% if rule.is_active %}success{% else %}medium{% endif %}">
+                            {% if rule.is_active %}{{ _("Active") }}{% else %}{{ _("Inactive") }}{% endif %}
+                        </span>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-12 text-muted">
+                {{ icon("options-outline", class="text-5xl block mx-auto mb-2") }}
+                <p class="mt-2">{{ _("No rules configured") }}</p>
+                <button type="button" class="btn btn-sm color-primary mt-3" @click="showAddForm = true">
+                    {{ _("Create your first rule") }}
+                </button>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>

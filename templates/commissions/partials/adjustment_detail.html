@@ -1,0 +1,100 @@
+<div data-back-url="/m/commissions/adjustments" hidden></div>
+
+<div class="p-4" x-data>
+    <!-- Header Card -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-{% if adjustment.amount >= 0 %}success{% else %}error{% endif %}/10 rounded-xl flex items-center justify-center">
+                        {% if adjustment.amount >= 0 %}
+                            {{ icon("arrow-up-outline", class="text-2xl text-success") }}
+                        {% else %}
+                            {{ icon("arrow-down-outline", class="text-2xl text-error") }}
+                        {% endif %}
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold">{{ adjustment.staff_name }}</h2>
+                        <span class="text-muted">{{ adjustment.adjustment_type_display }} &middot; {{ adjustment.adjustment_date.strftime("%d/%m/%Y") }}</span>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div class="text-2xl font-bold {% if adjustment.amount >= 0 %}text-success{% else %}text-error{% endif %}">
+                        {% if adjustment.amount >= 0 %}+{% endif %}${{ "%.2f"|format(adjustment.amount) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Details -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3 class="card-title">{{ _("Details") }}</h3>
+        </div>
+        <div class="card-body p-0">
+            <div class="list">
+                <div class="list-item">
+                    <div class="list-item-content">
+                        <div class="list-item-label">{{ _("Type") }}</div>
+                    </div>
+                    <div class="list-item-end text-muted">{{ adjustment.adjustment_type_display }}</div>
+                </div>
+                <div class="list-item">
+                    <div class="list-item-content">
+                        <div class="list-item-label">{{ _("Date") }}</div>
+                    </div>
+                    <div class="list-item-end text-muted">{{ adjustment.adjustment_date.strftime("%d/%m/%Y") }}</div>
+                </div>
+                <div class="list-item">
+                    <div class="list-item-content">
+                        <div class="list-item-label">{{ _("Reason") }}</div>
+                        <div class="list-item-note">{{ adjustment.reason }}</div>
+                    </div>
+                </div>
+                <div class="list-item">
+                    <div class="list-item-content">
+                        <div class="list-item-label">{{ _("Created") }}</div>
+                    </div>
+                    <div class="list-item-end text-muted">{{ adjustment.created_at.strftime("%d/%m/%Y %H:%M") }}</div>
+                </div>
+                {% if adjustment.payout %}
+                <div class="list-item list-item-clickable"
+                     hx-get="/m/commissions/payouts/{{ adjustment.payout.id }}"
+                     hx-target="#main-content-area"
+                     hx-push-url="true">
+                    <div class="list-item-content">
+                        <div class="list-item-label">{{ _("Linked Payout") }}</div>
+                    </div>
+                    <div class="list-item-end">
+                        <span class="text-primary">{{ adjustment.payout.reference }}</span>
+                        {{ icon("chevron-forward-outline", class="text-muted ml-1") }}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Danger Zone -->
+    {% if not adjustment.payout_id %}
+    <div class="card" style="border-color: var(--color-error)">
+        <div class="card-header">
+            <h3 class="card-title text-error">{{ _("Danger Zone") }}</h3>
+        </div>
+        <div class="card-body">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h4 class="font-semibold">{{ _("Delete Adjustment") }}</h4>
+                    <p class="text-sm text-muted">{{ _("This action cannot be undone") }}</p>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline color-error"
+                        @click="if(confirm('{{ _("Are you sure you want to delete this adjustment?") }}')) fetch('/m/commissions/adjustments/{{ adjustment.id }}/delete',{method:'POST',headers:{'X-CSRFToken':csrfToken}}).then(r=>r.json()).then(d=>{if(d.success) htmx.ajax('GET','/m/commissions/adjustments',{target:'#main-content-area',pushUrl:true}); else showToast(d.error,'error')})">
+                    {{ icon("trash-outline", class="mr-1") }}
+                    {{ _("Delete") }}
+                </button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>

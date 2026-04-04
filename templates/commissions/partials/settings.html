@@ -1,0 +1,249 @@
+<div class="p-4" x-data>
+    <!-- Commission Defaults -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3 class="card-title">{{ icon("calculator-outline", class="text-primary") }} {{ _("Commission Defaults") }}</h3>
+        </div>
+        <div class="list">
+            <div class="list-item">
+                <div class="list-item-content">
+                    <div class="list-item-label">{{ _("Default Commission Rate") }}</div>
+                    <div class="list-item-note">{{ _("Applied when no specific rule matches") }}</div>
+                </div>
+                <div class="list-item-end">
+                    <div class="flex items-center gap-1">
+                        <input type="number" name="default_commission_rate"
+                               value="{{ settings.default_commission_rate }}"
+                               class="input input--sm"
+                               style="width: 80px;"
+                               hx-post="/m/commissions/settings/input"
+                               hx-vals='js:{field: "default_commission_rate", value: event.target.value}'
+                               hx-trigger="change"
+                               hx-swap="none"
+                               step="0.01" min="0" max="100">
+                        <span class="text-muted">%</span>
+                    </div>
+                </div>
+            </div>
+            <div class="list-item">
+                <div class="list-item-content">
+                    <div class="list-item-label">{{ _("Calculation Basis") }}</div>
+                    <div class="list-item-note">{{ _("What the commission percentage is based on") }}</div>
+                </div>
+                <div class="list-item-end">
+                    <select name="calculation_basis" class="select select--sm" style="width: 180px;"
+                            hx-post="/m/commissions/settings/save"
+                            hx-include="[name]"
+                            hx-trigger="change"
+                            hx-swap="none">
+                        {% for key, label in calculation_basis_choices.items() %}
+                        <option value="{{ key }}" {% if settings.calculation_basis == key %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payout Settings -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3 class="card-title">{{ icon("cash-outline", class="text-success") }} {{ _("Payout Settings") }}</h3>
+        </div>
+        <div class="list">
+            <div class="list-item">
+                <div class="list-item-content">
+                    <div class="list-item-label">{{ _("Payout Frequency") }}</div>
+                    <div class="list-item-note">{{ _("How often commissions are paid out") }}</div>
+                </div>
+                <div class="list-item-end">
+                    <select name="payout_frequency" class="select select--sm" style="width: 150px;"
+                            hx-post="/m/commissions/settings/save"
+                            hx-include="[name]"
+                            hx-trigger="change"
+                            hx-swap="none">
+                        {% for key, label in payout_frequency_choices.items() %}
+                        <option value="{{ key }}" {% if settings.payout_frequency == key %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="list-item">
+                <div class="list-item-content">
+                    <div class="list-item-label">{{ _("Payout Day") }}</div>
+                    <div class="list-item-note">{{ _("Day of month/week for payouts") }}</div>
+                </div>
+                <div class="list-item-end">
+                    <input type="number" name="payout_day"
+                           value="{{ settings.payout_day }}"
+                           class="input input--sm"
+                           style="width: 80px;"
+                           hx-post="/m/commissions/settings/input"
+                           hx-vals='js:{field: "payout_day", value: event.target.value}'
+                           hx-trigger="change"
+                           hx-swap="none"
+                           min="1" max="31">
+                </div>
+            </div>
+            <div class="list-item">
+                <div class="list-item-content">
+                    <div class="list-item-label">{{ _("Minimum Payout Amount") }}</div>
+                    <div class="list-item-note">{{ _("Minimum amount required to process a payout") }}</div>
+                </div>
+                <div class="list-item-end">
+                    <div class="flex items-center gap-1">
+                        <span class="text-muted">$</span>
+                        <input type="number" name="minimum_payout_amount"
+                               value="{{ settings.minimum_payout_amount }}"
+                               class="input input--sm"
+                               style="width: 100px;"
+                               hx-post="/m/commissions/settings/input"
+                               hx-vals='js:{field: "minimum_payout_amount", value: event.target.value}'
+                               hx-trigger="change"
+                               hx-swap="none"
+                               step="0.01" min="0">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tax Settings -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3 class="card-title">{{ icon("document-text-outline", class="text-warning") }} {{ _("Tax Settings") }}</h3>
+        </div>
+        <div class="list">
+            <div class="list-item">
+                <div class="list-item-content">
+                    <div class="list-item-label">{{ _("Apply Tax Withholding") }}</div>
+                    <div class="list-item-note">{{ _("Automatically withhold taxes from commission payments") }}</div>
+                </div>
+                <div class="list-item-end">
+                    <label class="toggle">
+                        <input type="checkbox" name="apply_tax_withholding"
+                               {% if settings.apply_tax_withholding %}checked{% endif %}
+                               hx-post="/m/commissions/settings/toggle"
+                               hx-vals='js:{field: "apply_tax_withholding"}'
+                               hx-swap="none">
+                    </label>
+                </div>
+            </div>
+            <div class="list-item">
+                <div class="list-item-content">
+                    <div class="list-item-label">{{ _("Tax Withholding Rate") }}</div>
+                    <div class="list-item-note">{{ _("Percentage to withhold for taxes") }}</div>
+                </div>
+                <div class="list-item-end">
+                    <div class="flex items-center gap-1">
+                        <input type="number" name="tax_withholding_rate"
+                               value="{{ settings.tax_withholding_rate }}"
+                               class="input input--sm"
+                               style="width: 80px;"
+                               hx-post="/m/commissions/settings/input"
+                               hx-vals='js:{field: "tax_withholding_rate", value: event.target.value}'
+                               hx-trigger="change"
+                               hx-swap="none"
+                               step="0.01" min="0" max="100">
+                        <span class="text-muted">%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Display Settings -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3 class="card-title">{{ icon("eye-outline", class="text-primary") }} {{ _("Display Settings") }}</h3>
+        </div>
+        <div class="list">
+            <div class="list-item">
+                <div class="list-item-content">
+                    <div class="list-item-label">{{ _("Show Commission on Receipt") }}</div>
+                    <div class="list-item-note">{{ _("Display commission info on sales receipts") }}</div>
+                </div>
+                <div class="list-item-end">
+                    <label class="toggle">
+                        <input type="checkbox" name="show_commission_on_receipt"
+                               {% if settings.show_commission_on_receipt %}checked{% endif %}
+                               hx-post="/m/commissions/settings/toggle"
+                               hx-vals='js:{field: "show_commission_on_receipt"}'
+                               hx-swap="none">
+                    </label>
+                </div>
+            </div>
+            <div class="list-item">
+                <div class="list-item-content">
+                    <div class="list-item-label">{{ _("Show Pending Commission to Staff") }}</div>
+                    <div class="list-item-note">{{ _("Let staff see their pending commissions") }}</div>
+                </div>
+                <div class="list-item-end">
+                    <label class="toggle">
+                        <input type="checkbox" name="show_pending_commission"
+                               {% if settings.show_pending_commission %}checked{% endif %}
+                               hx-post="/m/commissions/settings/toggle"
+                               hx-vals='js:{field: "show_pending_commission"}'
+                               hx-swap="none">
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3 class="card-title">{{ icon("link-outline") }} {{ _("Quick Actions") }}</h3>
+        </div>
+        <div class="list">
+            <a hx-get="/m/commissions/rules"
+               hx-target="#main-content-area"
+               hx-push-url="true"
+               class="list-item list-item-clickable">
+                <div class="list-item-start">{{ icon("options-outline", class="text-primary") }}</div>
+                <div class="list-item-content">
+                    <div class="list-item-label">{{ _("Commission Rules") }}</div>
+                    <div class="list-item-note">{{ _("Manage rules for commission calculation") }}</div>
+                </div>
+                <div class="list-item-end">{{ icon("chevron-forward-outline", class="text-muted") }}</div>
+            </a>
+            <a hx-get="/m/commissions/payouts"
+               hx-target="#main-content-area"
+               hx-push-url="true"
+               class="list-item list-item-clickable">
+                <div class="list-item-start">{{ icon("cash-outline", class="text-success") }}</div>
+                <div class="list-item-content">
+                    <div class="list-item-label">{{ _("Payouts") }}</div>
+                    <div class="list-item-note">{{ _("View and manage commission payouts") }}</div>
+                </div>
+                <div class="list-item-end">{{ icon("chevron-forward-outline", class="text-muted") }}</div>
+            </a>
+            <a hx-get="/m/commissions/adjustments"
+               hx-target="#main-content-area"
+               hx-push-url="true"
+               class="list-item list-item-clickable">
+                <div class="list-item-start">{{ icon("swap-horizontal-outline", class="text-warning") }}</div>
+                <div class="list-item-content">
+                    <div class="list-item-label">{{ _("Adjustments") }}</div>
+                    <div class="list-item-note">{{ _("Manual adjustments and corrections") }}</div>
+                </div>
+                <div class="list-item-end">{{ icon("chevron-forward-outline", class="text-muted") }}</div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Reset -->
+    <div class="card" style="border-color: var(--color-warning)">
+        <div class="card-header">
+            <h3 class="card-title text-warning">{{ _("Reset Settings") }}</h3>
+        </div>
+        <div class="card-body">
+            <p class="text-muted mb-3">{{ _("Restore all commission settings to their default values.") }}</p>
+            <button type="button" class="btn color-warning btn-outline"
+                    @click="if(confirm('{{ _("Reset all settings to defaults?") }}')) fetch('/m/commissions/settings/reset',{method:'POST',headers:{'X-CSRFToken':csrfToken}}).then(r=>{if(r.ok) htmx.ajax('GET','/m/commissions/settings',{target:'#main-content-area'})})">
+                {{ icon("refresh-outline") }} {{ _("Reset to Defaults") }}
+            </button>
+        </div>
+    </div>
+</div>

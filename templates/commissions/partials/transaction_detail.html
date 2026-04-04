@@ -1,0 +1,125 @@
+<div data-back-url="/m/commissions/transactions" hidden></div>
+
+<div class="p-4">
+    <!-- Header Card -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
+                        {{ icon("receipt-outline", class="text-2xl text-primary") }}
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold">{{ transaction.staff_name }}</h2>
+                        <span class="text-muted">{{ transaction.transaction_date.strftime("%d/%m/%Y") }}{% if transaction.sale_reference %} &middot; {{ transaction.sale_reference }}{% endif %}</span>
+                    </div>
+                </div>
+                <span class="badge color-{{ transaction.status_color }}">
+                    {{ transaction.status_display }}
+                </span>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if transaction.description %}
+            <p class="text-muted mb-4">{{ transaction.description }}</p>
+            {% endif %}
+
+            <!-- Amount Stats -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="p-3 rounded-lg bg-base-100">
+                    <div class="text-xs text-muted uppercase font-semibold mb-1">{{ _("Sale Amount") }}</div>
+                    <div class="text-lg font-semibold">${{ "%.2f"|format(transaction.sale_amount) }}</div>
+                </div>
+                <div class="p-3 rounded-lg bg-base-100">
+                    <div class="text-xs text-muted uppercase font-semibold mb-1">{{ _("Rate") }}</div>
+                    <div class="text-lg font-semibold">{{ transaction.commission_rate }}%</div>
+                </div>
+                <div class="p-3 rounded-lg bg-base-100">
+                    <div class="text-xs text-muted uppercase font-semibold mb-1">{{ _("Commission") }}</div>
+                    <div class="text-lg font-semibold">${{ "%.2f"|format(transaction.commission_amount) }}</div>
+                </div>
+                <div class="p-3 rounded-lg bg-base-100">
+                    <div class="text-xs text-muted uppercase font-semibold mb-1">{{ _("Net Amount") }}</div>
+                    <div class="text-lg font-semibold text-success">${{ "%.2f"|format(transaction.net_commission) }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Details -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3 class="card-title">{{ _("Details") }}</h3>
+        </div>
+        <div class="card-body p-0">
+            <div class="list">
+                {% if transaction.rule %}
+                <div class="list-item">
+                    <div class="list-item-content">
+                        <div class="list-item-label">{{ _("Rule") }}</div>
+                    </div>
+                    <div class="list-item-end text-muted">{{ transaction.rule.name }}</div>
+                </div>
+                {% endif %}
+                <div class="list-item">
+                    <div class="list-item-content">
+                        <div class="list-item-label">{{ _("Tax Withheld") }}</div>
+                    </div>
+                    <div class="list-item-end text-muted">${{ "%.2f"|format(transaction.tax_amount) }}</div>
+                </div>
+                {% if transaction.approved_at %}
+                <div class="list-item">
+                    <div class="list-item-content">
+                        <div class="list-item-label">{{ _("Approved At") }}</div>
+                    </div>
+                    <div class="list-item-end text-muted">{{ transaction.approved_at.strftime("%d/%m/%Y %H:%M") }}</div>
+                </div>
+                {% endif %}
+                {% if transaction.payout %}
+                <div class="list-item list-item-clickable"
+                     hx-get="/m/commissions/payouts/{{ transaction.payout.id }}"
+                     hx-target="#main-content-area"
+                     hx-push-url="true">
+                    <div class="list-item-content">
+                        <div class="list-item-label">{{ _("Payout") }}</div>
+                    </div>
+                    <div class="list-item-end">
+                        <span class="text-primary">{{ transaction.payout.reference }}</span>
+                        {{ icon("chevron-forward-outline", class="text-muted ml-1") }}
+                    </div>
+                </div>
+                {% endif %}
+                {% if transaction.notes %}
+                <div class="list-item">
+                    <div class="list-item-content">
+                        <div class="list-item-label">{{ _("Notes") }}</div>
+                        <div class="list-item-note">{{ transaction.notes }}</div>
+                    </div>
+                </div>
+                {% endif %}
+                <div class="list-item">
+                    <div class="list-item-content">
+                        <div class="list-item-label">{{ _("Created") }}</div>
+                    </div>
+                    <div class="list-item-end text-muted">{{ transaction.created_at.strftime("%d/%m/%Y %H:%M") }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions for pending transactions -->
+    {% if transaction.status == 'pending' %}
+    <div class="grid grid-cols-2 gap-3" x-data>
+        <button type="button" class="btn color-success w-full"
+                @click="if(confirm('{{ _("Approve this commission transaction?") }}')) fetch('/m/commissions/transactions/{{ transaction.id }}/approve', {method:'POST', headers:{'X-CSRFToken': csrfToken}}).then(r=>r.json()).then(d=>{if(d.success) htmx.ajax('GET','/m/commissions/transactions/{{ transaction.id }}',{target:'#main-content-area',pushUrl:true}); else showToast(d.error,'error')})">
+            {{ icon("checkmark-outline", class="mr-1") }}
+            {{ _("Approve") }}
+        </button>
+        <button type="button" class="btn btn-outline color-error w-full"
+                @click="let reason=prompt('{{ _("Reason for rejection (optional):") }}'); if(reason!==null){let f=new FormData();f.append('reason',reason);fetch('/m/commissions/transactions/{{ transaction.id }}/reject',{method:'POST',headers:{'X-CSRFToken':csrfToken},body:f}).then(r=>r.json()).then(d=>{if(d.success) htmx.ajax('GET','/m/commissions/transactions/{{ transaction.id }}',{target:'#main-content-area',pushUrl:true}); else showToast(d.error,'error')})}">
+            {{ icon("close-outline", class="mr-1") }}
+            {{ _("Reject") }}
+        </button>
+    </div>
+    {% endif %}
+</div>

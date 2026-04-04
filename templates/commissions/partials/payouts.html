@@ -1,0 +1,118 @@
+<div class="p-4" x-data="{ showCreateForm: false }">
+    <!-- Page Header -->
+    <div class="flex justify-between items-center mb-4">
+        <div>
+            <h1 class="text-2xl font-bold">{{ _("Payouts") }}</h1>
+            <p class="text-sm text-muted mt-1">{{ _("Commission payout batches") }}</p>
+        </div>
+        <button type="button" class="btn color-primary" @click="showCreateForm = !showCreateForm">
+            {{ icon("add-outline", class="mr-1") }}
+            {{ _("New Payout") }}
+        </button>
+    </div>
+
+    <!-- Create Payout Form (hidden by default) -->
+    <div class="card mb-4" x-show="showCreateForm" x-cloak>
+        <div class="card-header">
+            <h3 class="card-title">{{ icon("add-circle-outline", class="text-primary") }} {{ _("Create Payout") }}</h3>
+        </div>
+        <div class="card-body">
+            <form @submit.prevent="
+                let f = new FormData($el);
+                fetch('/m/commissions/payouts/create', {method:'POST', headers:{'X-CSRFToken':csrfToken}, body:f})
+                .then(r=>r.json()).then(d=>{
+                    if(d.success) htmx.ajax('GET','/m/commissions/payouts',{target:'#main-content-area',pushUrl:true});
+                    else showToast(d.error || 'Error creating payout','error');
+                })">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                    <div>
+                        <label class="form-group-label mb-1">{{ _("Staff Member") }}</label>
+                        <input type="text" name="staff_id" class="input" placeholder="{{ _('Staff ID') }}" required>
+                    </div>
+                    <div></div>
+                    <div>
+                        <label class="form-group-label mb-1">{{ _("Period Start") }}</label>
+                        <input type="date" name="period_start" class="input" required>
+                    </div>
+                    <div>
+                        <label class="form-group-label mb-1">{{ _("Period End") }}</label>
+                        <input type="date" name="period_end" class="input" required>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-group-label mb-1">{{ _("Notes") }}</label>
+                    <textarea name="notes" class="textarea" rows="2"></textarea>
+                </div>
+                <div class="flex gap-2">
+                    <button type="submit" class="btn color-primary">
+                        {{ icon("checkmark-outline", class="mr-1") }}
+                        {{ _("Create") }}
+                    </button>
+                    <button type="button" class="btn btn-ghost" @click="showCreateForm = false">
+                        {{ _("Cancel") }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <select name="status" class="select"
+                hx-get="/m/commissions/payouts"
+                hx-trigger="change"
+                hx-target="#main-content-area"
+                hx-push-url="true">
+                <option value="">{{ _("All status") }}</option>
+                {% for key, label in status_choices.items() %}
+                <option value="{{ key }}" {% if status_filter == key %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <!-- Payout List -->
+    <div class="card">
+        <div class="card-body p-0">
+            {% if payouts %}
+            <div class="list">
+                {% for payout in payouts %}
+                <a hx-get="/m/commissions/payouts/{{ payout.id }}"
+                   hx-target="#main-content-area"
+                   hx-push-url="true"
+                   class="list-item list-item-clickable">
+                    <div class="list-item-start">
+                        <div class="w-10 h-10 rounded-lg bg-{{ payout.status_color }}/10 flex items-center justify-center">
+                            {{ icon("cash-outline", class="text-xl text-" ~ payout.status_color) }}
+                        </div>
+                    </div>
+                    <div class="list-item-content">
+                        <div class="list-item-label">
+                            {{ payout.staff_name }}
+                            <span class="badge badge-sm ml-2 font-mono">{{ payout.reference }}</span>
+                        </div>
+                        <div class="list-item-note">
+                            {{ payout.period_start.strftime("%d/%m/%Y") }} - {{ payout.period_end.strftime("%d/%m/%Y") }}
+                            &middot; {{ payout.transaction_count }} {{ _("transactions") }}
+                        </div>
+                    </div>
+                    <div class="list-item-end text-right">
+                        <div class="font-semibold">${{ "%.2f"|format(payout.net_amount) }}</div>
+                        <span class="badge badge-sm color-{{ payout.status_color }}">
+                            {{ payout.status_display }}
+                        </span>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-12 text-muted">
+                {{ icon("cash-outline", class="text-5xl block mx-auto mb-2") }}
+                <p class="mt-2">{{ _("No payouts found") }}</p>
+                <p class="text-sm">{{ _("Create a payout to batch approved commissions") }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>

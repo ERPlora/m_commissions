@@ -1,0 +1,85 @@
+<div class="p-4">
+    <!-- Page Header -->
+    <div class="flex justify-between items-center mb-4">
+        <div>
+            <h1 class="text-2xl font-bold">{{ _("Transactions") }}</h1>
+            <p class="text-sm text-muted mt-1">{{ _("Commission transactions for all staff") }}</p>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div class="input-group">
+                    <span class="input-group-icon">
+                        {{ icon("search-outline") }}
+                    </span>
+                    <input type="text" name="q" value="{{ search }}"
+                        placeholder="{{ _('Search by staff, reference...') }}"
+                        class="input"
+                        hx-get="/m/commissions/transactions"
+                        hx-trigger="keyup changed delay:400ms"
+                        hx-target="#main-content-area"
+                        hx-include="[name='status']"
+                        hx-push-url="true">
+                </div>
+
+                <select name="status" class="select"
+                    hx-get="/m/commissions/transactions"
+                    hx-trigger="change"
+                    hx-target="#main-content-area"
+                    hx-include="[name='q']"
+                    hx-push-url="true">
+                    <option value="">{{ _("All status") }}</option>
+                    {% for key, label in status_choices.items() %}
+                    <option value="{{ key }}" {% if status_filter == key %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+
+                <div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transaction List -->
+    <div class="card">
+        <div class="card-body p-0">
+            {% if transactions %}
+            <div class="list">
+                {% for trans in transactions %}
+                <a hx-get="/m/commissions/transactions/{{ trans.id }}"
+                   hx-target="#main-content-area"
+                   hx-push-url="true"
+                   class="list-item list-item-clickable">
+                    <div class="list-item-start">
+                        <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                            {{ icon("receipt-outline", class="text-xl text-primary") }}
+                        </div>
+                    </div>
+                    <div class="list-item-content">
+                        <div class="list-item-label">{{ trans.staff_name }}</div>
+                        <div class="list-item-note">
+                            {% if trans.rule %}{{ trans.rule.name }} &middot; {% endif %}{{ trans.transaction_date.strftime("%d/%m/%Y") }}
+                            {% if trans.sale_reference %} &middot; {{ trans.sale_reference }}{% endif %}
+                        </div>
+                    </div>
+                    <div class="list-item-end text-right">
+                        <div class="font-semibold">${{ "%.2f"|format(trans.commission_amount) }}</div>
+                        <span class="badge badge-sm color-{{ trans.status_color }}">
+                            {{ trans.status_display }}
+                        </span>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-12 text-muted">
+                {{ icon("receipt-outline", class="text-5xl block mx-auto mb-2") }}
+                <p class="mt-2">{{ _("No transactions found") }}</p>
+                <p class="text-sm">{{ _("Commission transactions will appear here as sales are processed") }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
