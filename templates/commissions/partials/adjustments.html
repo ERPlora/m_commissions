@@ -20,7 +20,8 @@
             <form @submit.prevent="
                 let f = new FormData($el);
                 fetch('/m/commissions/adjustments/add', {method:'POST', headers:{'X-CSRFToken':csrfToken}, body:f})
-                .then(r=>r.json()).then(d=>{
+                .then(r=>
+                    {{ csrf_input() }}r.json()).then(d=>{
                     if(d.success) htmx.ajax('GET','/m/commissions/adjustments',{target:'#main-content-area',pushUrl:true});
                     else showToast(d.error || d.errors || 'Error creating adjustment','error');
                 })">

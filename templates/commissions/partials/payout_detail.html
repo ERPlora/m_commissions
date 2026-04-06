@@ -184,7 +184,8 @@
             <form @submit.prevent="
                 if(!confirm('{{ _("Mark this payout as paid?") }}')) return;
                 let f = new FormData($el);
-                fetch('/m/commissions/payouts/{{ payout.id }}/process',{method:'POST',headers:{'X-CSRFToken':csrfToken},body:f}).then(r=>r.json()).then(d=>{if(d.success) htmx.ajax('GET','/m/commissions/payouts/{{ payout.id }}',{target:'#main-content-area',pushUrl:true}); else showToast(d.error,'error')})">
+                fetch('/m/commissions/payouts/{{ payout.id }}/process',{method:'POST',headers:{'X-CSRFToken':csrfToken},body:f}).then(r=>
+                    {{ csrf_input() }}r.json()).then(d=>{if(d.success) htmx.ajax('GET','/m/commissions/payouts/{{ payout.id }}',{target:'#main-content-area',pushUrl:true}); else showToast(d.error,'error')})">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
                     <div>
                         <label class="form-group-label mb-1">{{ _("Payment Method") }}</label>
