@@ -241,7 +241,7 @@
         <div class="card-body">
             <p class="text-muted mb-3">{{ _("Restore all commission settings to their default values.") }}</p>
             <button type="button" class="btn color-warning btn-outline"
-                    @click="if(confirm('{{ _("Reset all settings to defaults?") }}')) fetch('/m/commissions/settings/reset',{method:'POST',headers:{'X-CSRFToken':csrfToken}}).then(r=>{if(r.ok) htmx.ajax('GET','/m/commissions/settings',{target:'#main-content-area'})})">
+                    @click="if(confirm('{{ _("Reset all settings to defaults?") }}')) fetch('/m/commissions/settings/reset',{method:'POST',headers:{'X-CSRFToken':getCsrfToken()}}).then(r=>{if(r.ok) htmx.ajax('GET','/m/commissions/settings',{target:'#main-content-area'})})">
                 {{ icon("refresh-outline") }} {{ _("Reset to Defaults") }}
             </button>
         </div>

@@ -20,7 +20,7 @@
             <form @submit.prevent="
                 let f = new FormData($el);
                 f.append('is_active', 'true');
-                fetch('/m/commissions/rules/add', {method:'POST', headers:{'X-CSRFToken':csrfToken}, body:f})
+                fetch('/m/commissions/rules/add', {method:'POST', headers:{'X-CSRFToken':getCsrfToken()}, body:f})
                 .then(r=>
                     {{ csrf_input() }}r.json()).then(d=>{
                     if(d.success) htmx.ajax('GET','/m/commissions/rules',{target:'#main-content-area',pushUrl:true});

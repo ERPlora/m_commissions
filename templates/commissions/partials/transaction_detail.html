@@ -111,12 +111,12 @@
     {% if transaction.status == 'pending' %}
     <div class="grid grid-cols-2 gap-3" x-data>
         <button type="button" class="btn color-success w-full"
-                @click="if(confirm('{{ _("Approve this commission transaction?") }}')) fetch('/m/commissions/transactions/{{ transaction.id }}/approve', {method:'POST', headers:{'X-CSRFToken': csrfToken}}).then(r=>r.json()).then(d=>{if(d.success) htmx.ajax('GET','/m/commissions/transactions/{{ transaction.id }}',{target:'#main-content-area',pushUrl:true}); else showToast(d.error,'error')})">
+                @click="if(confirm('{{ _("Approve this commission transaction?") }}')) fetch('/m/commissions/transactions/{{ transaction.id }}/approve', {method:'POST', headers:{'X-CSRFToken': getCsrfToken()}}).then(r=>r.json()).then(d=>{if(d.success) htmx.ajax('GET','/m/commissions/transactions/{{ transaction.id }}',{target:'#main-content-area',pushUrl:true}); else showToast(d.error,'error')})">
             {{ icon("checkmark-outline", class="mr-1") }}
             {{ _("Approve") }}
         </button>
         <button type="button" class="btn btn-outline color-error w-full"
-                @click="let reason=prompt('{{ _("Reason for rejection (optional):") }}'); if(reason!==null){let f=new FormData();f.append('reason',reason);fetch('/m/commissions/transactions/{{ transaction.id }}/reject',{method:'POST',headers:{'X-CSRFToken':csrfToken},body:f}).then(r=>r.json()).then(d=>{if(d.success) htmx.ajax('GET','/m/commissions/transactions/{{ transaction.id }}',{target:'#main-content-area',pushUrl:true}); else showToast(d.error,'error')})}">
+                @click="let reason=prompt('{{ _("Reason for rejection (optional):") }}'); if(reason!==null){let f=new FormData();f.append('reason',reason);fetch('/m/commissions/transactions/{{ transaction.id }}/reject',{method:'POST',headers:{'X-CSRFToken':getCsrfToken()},body:f}).then(r=>r.json()).then(d=>{if(d.success) htmx.ajax('GET','/m/commissions/transactions/{{ transaction.id }}',{target:'#main-content-area',pushUrl:true}); else showToast(d.error,'error')})}">
             {{ icon("close-outline", class="mr-1") }}
             {{ _("Reject") }}
         </button>

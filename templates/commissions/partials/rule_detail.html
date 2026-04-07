@@ -96,7 +96,7 @@
     <!-- Actions -->
     <div class="grid grid-cols-2 gap-3 mb-4">
         <button type="button" class="btn btn-outline w-full"
-                @click="fetch('/m/commissions/rules/{{ rule.id }}/toggle',{method:'POST',headers:{'X-CSRFToken':csrfToken}}).then(r=>r.json()).then(d=>{if(d.success) htmx.ajax('GET','/m/commissions/rules/{{ rule.id }}',{target:'#main-content-area',pushUrl:true}); else showToast(d.error,'error')})">
+                @click="fetch('/m/commissions/rules/{{ rule.id }}/toggle',{method:'POST',headers:{'X-CSRFToken':getCsrfToken()}}).then(r=>r.json()).then(d=>{if(d.success) htmx.ajax('GET','/m/commissions/rules/{{ rule.id }}',{target:'#main-content-area',pushUrl:true}); else showToast(d.error,'error')})">
             {% if rule.is_active %}
                 {{ icon("pause-outline", class="mr-1") }}
                 {{ _("Deactivate") }}
@@ -125,7 +125,7 @@
                     <p class="text-sm text-muted">{{ _("This action cannot be undone") }}</p>
                 </div>
                 <button type="button" class="btn btn-sm btn-outline color-error"
-                        @click="if(confirm('{{ _("Are you sure you want to delete this rule?") }}')) fetch('/m/commissions/rules/{{ rule.id }}/delete',{method:'POST',headers:{'X-CSRFToken':csrfToken}}).then(r=>r.json()).then(d=>{if(d.success) htmx.ajax('GET','/m/commissions/rules',{target:'#main-content-area',pushUrl:true}); else showToast(d.error,'error')})">
+                        @click="if(confirm('{{ _("Are you sure you want to delete this rule?") }}')) fetch('/m/commissions/rules/{{ rule.id }}/delete',{method:'POST',headers:{'X-CSRFToken':getCsrfToken()}}).then(r=>r.json()).then(d=>{if(d.success) htmx.ajax('GET','/m/commissions/rules',{target:'#main-content-area',pushUrl:true}); else showToast(d.error,'error')})">
                     {{ icon("trash-outline", class="mr-1") }}
                     {{ _("Delete") }}
                 </button>

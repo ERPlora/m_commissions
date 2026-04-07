@@ -19,7 +19,7 @@
         <div class="card-body">
             <form @submit.prevent="
                 let f = new FormData($el);
-                fetch('/m/commissions/adjustments/add', {method:'POST', headers:{'X-CSRFToken':csrfToken}, body:f})
+                fetch('/m/commissions/adjustments/add', {method:'POST', headers:{'X-CSRFToken':getCsrfToken()}, body:f})
                 .then(r=>
                     {{ csrf_input() }}r.json()).then(d=>{
                     if(d.success) htmx.ajax('GET','/m/commissions/adjustments',{target:'#main-content-area',pushUrl:true});
