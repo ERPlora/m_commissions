@@ -42,6 +42,11 @@ Models: CommissionsSettings, CommissionRule, CommissionTransaction, CommissionPa
 - `staff_id` FK + `staff_name`, `adjustment_type` ('bonus' | 'correction' | 'deduction' | 'refund_adjustment' | 'other')
 - `amount`, `reason`, `payout_id` FK, `adjustment_date`, `created_by_id`
 
+### Restrictions
+- Commission rate must be > 0.
+- If both effective_from and effective_until are set, effective_from must be before effective_until.
+- Cannot delete a commission rule that has pending or approved transactions — resolve or reassign first.
+
 ### Key Flows
 1. Sale completes → auto-create CommissionTransaction (status='pending')
 2. Manager approves → status='approved'

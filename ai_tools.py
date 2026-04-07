@@ -135,14 +135,26 @@ class CreateCommissionRule(AssistantTool):
         db = request.state.db
         hub_id = request.state.hub_id
 
+        # Validate rate > 0
+        rate = Decimal(args["rate"])
+        if rate <= 0:
+            return {"error": "Commission rate must be greater than 0."}
+
+        # Validate effective_from < effective_until if both provided
+        effective_from = args.get("effective_from")
+        effective_until = args.get("effective_until")
+        if effective_from and effective_until:
+            if date.fromisoformat(effective_from) >= date.fromisoformat(effective_until):
+                return {"error": "effective_from must be before effective_until."}
+
         async with atomic(db) as session:
             rule = CommissionRule(
                 hub_id=hub_id,
                 name=args["name"],
                 rule_type=args.get("rule_type", "percentage"),
-                rate=Decimal(args["rate"]),
-                effective_from=args.get("effective_from"),
-                effective_until=args.get("effective_until"),
+                rate=rate,
+                effective_from=effective_from,
+                effective_until=effective_until,
                 priority=args.get("priority", 0),
             )
             session.add(rule)
@@ -219,6 +231,19 @@ class DeleteCommissionRule(AssistantTool):
         rule = await _q(CommissionRule, db, hub_id).get(uuid.UUID(args["rule_id"]))
         if rule is None:
             return {"error": "Commission rule not found"}
+
+        # Check for pending/approved transactions using this rule
+        pending_count = await _q(CommissionTransaction, db, hub_id).filter(
+            CommissionTransaction.rule_id == rule.id,
+            CommissionTransaction.status.in_(["pending", "approved"]),
+        ).count()
+        if pending_count > 0:
+            return {
+                "error": (
+                    f"Cannot delete rule '{rule.name}' — it has {pending_count} pending/approved "
+                    f"transaction(s). Resolve or reassign them first."
+                ),
+            }
 
         name = rule.name
         rule.is_deleted = True
