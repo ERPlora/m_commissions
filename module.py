@@ -10,7 +10,7 @@ Sales commission rules, tracking, payouts, and adjustments for staff members.
 # ---------------------------------------------------------------------------
 MODULE_ID = "commissions"
 MODULE_NAME = "Commissions"
-MODULE_VERSION = "1.0.1"
+MODULE_VERSION = "1.0.2"
 MODULE_ICON = "wallet-outline"
 MODULE_DESCRIPTION = "Sales commission rules, tracking, and payouts"
 MODULE_AUTHOR = "ERPlora"
