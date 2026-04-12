@@ -74,6 +74,7 @@ PAYOUT_STATUS_CHOICES = {
     "completed": "Completed",
     "failed": "Failed",
     "cancelled": "Cancelled",
+    "included_in_payslip": "Included in Payslip",
 }
 
 PAYMENT_METHOD_CHOICES = {
@@ -109,6 +110,7 @@ PAYOUT_STATUS_COLORS = {
     "completed": "success",
     "failed": "error",
     "cancelled": "error",
+    "included_in_payslip": "success",
 }
 
 
@@ -404,6 +406,9 @@ class CommissionPayout(HubBaseModel):
     paid_by_id: Mapped[uuid.UUID | None] = mapped_column(Uuid, nullable=True)
     notes: Mapped[str] = mapped_column(Text, default="", server_default="")
 
+    # Payroll integration — set when this payout is included in a Payslip
+    payslip_id: Mapped[uuid.UUID | None] = mapped_column(Uuid, nullable=True)
+
     # Relationships
     transactions: Mapped[list[CommissionTransaction]] = relationship(
         "CommissionTransaction", back_populates="payout",
@@ -430,6 +435,17 @@ class CommissionPayout(HubBaseModel):
     @property
     def can_be_modified(self) -> bool:
         return self.status in ("draft", "pending")
+
+    def mark_included_in_payslip(self, payslip_id: uuid.UUID) -> None:
+        """
+        Mark this payout as included in a payslip.
+
+        Sets status to 'included_in_payslip' and stores the payslip reference.
+        This prevents double-counting across payroll runs.
+        Called by PayrollCalculationService.confirm() — not by the collector.
+        """
+        self.status = "included_in_payslip"
+        self.payslip_id = payslip_id
 
 
 # ============================================================================
