@@ -1,0 +1,9 @@
+repos:
+  - repo: local
+    hooks:
+      - id: docs-translations-check
+        name: Check docs translations are up to date
+        entry: python scripts/translate_docs.py --check
+        language: system
+        pass_filenames: false
+        files: ^(README\.md|docs/en/.*\.md)$
