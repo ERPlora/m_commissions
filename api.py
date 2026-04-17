@@ -14,8 +14,8 @@ from decimal import Decimal
 from fastapi import APIRouter, Query, Request
 from fastapi.responses import JSONResponse
 
-from app.core.db.query import HubQuery
-from app.core.dependencies import DbSession, HubId
+from runtime.models.queryset import HubQuery
+from runtime.auth.current_user import DbSession, HubId
 
 from .models import (
     CommissionPayout,

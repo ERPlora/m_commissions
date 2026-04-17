@@ -10,7 +10,7 @@ import logging
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from app.core.events.bus import AsyncEventBus
+    from runtime.signals.dispatcher import AsyncEventBus
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +60,7 @@ async def _on_sale_completed(
         from datetime import date as date_type
         from decimal import Decimal
 
-        from app.core.db.query import HubQuery
+        from runtime.models.queryset import HubQuery
 
         from .models import CommissionRule, CommissionTransaction, CommissionsSettings
 

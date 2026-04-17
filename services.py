@@ -11,8 +11,8 @@ import uuid
 from datetime import date, datetime, UTC
 from decimal import Decimal
 
-from app.core.db.transactions import atomic
-from app.modules.services import ModuleService, action
+from runtime.orm.transactions import atomic
+from runtime.apps.service_facade import ModuleService, action
 
 from commissions.models import CommissionRule, CommissionTransaction
 

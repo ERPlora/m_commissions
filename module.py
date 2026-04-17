@@ -14,7 +14,6 @@ MODULE_VERSION = "1.0.6"
 MODULE_ICON = "wallet-outline"
 MODULE_DESCRIPTION = "Sales commission rules, tracking, and payouts"
 MODULE_AUTHOR = "ERPlora"
-MODULE_CATEGORY = "sales"
 
 # ---------------------------------------------------------------------------
 # Capabilities

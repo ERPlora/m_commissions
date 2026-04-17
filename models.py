@@ -29,7 +29,7 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.core.db.base import HubBaseModel
+from runtime.models.base import HubBaseModel
 
 if TYPE_CHECKING:
     pass

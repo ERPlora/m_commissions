@@ -10,7 +10,6 @@ Runs from repo root. Uses OPENAI_API_KEY env var.
 import hashlib
 import json
 import os
-import re
 import sys
 import time
 from pathlib import Path

@@ -21,7 +21,7 @@ async def on_install(session: AsyncSession, hub_id: UUID) -> None:
     from .models import CommissionsSettings
 
     # Ensure settings singleton exists
-    from app.core.db.query import HubQuery
+    from runtime.models.queryset import HubQuery
     q = HubQuery(CommissionsSettings, session, hub_id)
     existing = await q.first()
     if existing is None:
